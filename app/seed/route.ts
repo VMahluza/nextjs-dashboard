@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import postgres from 'postgres';
 import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+const sql = postgres(process.env.POSTGRES_URL!);
 
 async function seedUsers() {
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
@@ -20,7 +20,7 @@ async function seedUsers() {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       return sql`
         INSERT INTO users (id, name, email, password)
-        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
+        VALUES (${user.id}, ${user.name}, ${user.email}, ${user.password})
         ON CONFLICT (id) DO NOTHING;
       `;
     }),
@@ -102,6 +102,7 @@ async function seedRevenue() {
 }
 
 export async function GET() {
+
   try {
     const result = await sql.begin((sql) => [
       seedUsers(),
